@@ -98,17 +98,17 @@ bool SimionField::isValid() const
 
 double SimionField::electVoltage(const simion::PA &pa)
 {
+    QMutex mutex;
     double result = 0.0;
-    ITERATE_OVER
+    ITERATE_OVER_PAR
     (
         pa,
         if(pa.electrode(x, y, z) && pa.potential(x, y, z) != 0.0)
         {
-            result = pa.potential(x, y, z);
-            goto end;
+            QMutexLocker lock(&mutex);
+            result = qMax(pa.potential(x, y, z), result);
         }
     )
-    end:
     return result;
 }
 

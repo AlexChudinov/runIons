@@ -34,7 +34,6 @@ SOURCES += \
     pyexport.cpp
 
 HEADERS += \
-        runions_global.h \ 
     pa.h \
     task.h \
     util.h \

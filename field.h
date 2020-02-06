@@ -29,14 +29,14 @@ public:
      * @param pos position in space
      * @return maybe potential value if position is inside the mesh
      */
-    virtual MayBeDouble potential(const Vector3d& pos_mm) const = 0;
+    virtual MayBeDouble potential(const Vector3d& pos_gu) const = 0;
 
     /**
      * @brief field returns field at a given point
      * @param pospoint in space
      * @return maybe field if position is inside the mesh
      */
-    virtual MayBeVector3d field(const Vector3d& pos_mm) const = 0;
+    virtual MayBeVector3d field(const Vector3d& pos_gu) const = 0;
 
     /**
      * @brief isValid checks the field validity

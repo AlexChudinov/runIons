@@ -82,19 +82,22 @@ void DefaultTrackIon::run()
         State S1 = mInitState, S0 = S1;
         double h = mH_us;
         double t0 = mTime_us;
+        if(mObs) mObs->write(S0, t0); //write first step
+        if(mStopCond && mStopCond->stop(mInitState, t0))
+            return; //early return if stop condition was achieved before integration
         while(h / mH_us >= std::numeric_limits<double>::epsilon())
         {
-            if(!mIsRunning || (mStopCond && mStopCond->stop(S1, t0)))
-            {
+            S1 = mIntegrator->doStep(S0, t0, h);
+            if(!mIsRunning || (mStopCond && mStopCond->stop(S1, t0 + h)))
+            {//step was unsuccessfull
                 mIsRunning = true;
                 h *= .5;
             }
-            else
+            else //if succeded
             {
                 S0 = S1;
-                if(mObs) mObs->write(S0, t0);
-                S1 = mIntegrator->doStep(S0, t0, h);
                 t0 += h;
+                if(mObs) mObs->write(S0, t0);
             }
         }
 
@@ -166,6 +169,20 @@ void FileObserver::write(const DefaultTrackIon::State &state, double time_us)
               << state[4] << "\t" << state[5] << "\n";
         cnt = 0;
     }
+}
+
+VectorObserver::VectorObserver
+(
+    std::vector<DefaultTrackIon::State> &states,
+    std::vector<double> &times,
+    int stepsPerSample
+)
+    :
+      mStates(states),
+      mTimes(times),
+      mStepsPerSample(stepsPerSample)
+{
+
 }
 
 void VectorObserver::write(const DefaultTrackIon::State &state, double time_us)
