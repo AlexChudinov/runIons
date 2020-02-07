@@ -110,7 +110,7 @@ class SinFunction : public CompoundField::TimeFunction
     const double mOmega_us;
     const double mPhase_rad;
 public:
-    SinFunction(double freq_us, double phase_rad);
+    SinFunction(double freq_MHz, double phase_rad = 0);
 
     virtual double calc(double t_us) const;
 };

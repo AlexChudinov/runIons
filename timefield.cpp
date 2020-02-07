@@ -83,9 +83,9 @@ void CompoundField::clear()
 }
 
 
-SinFunction::SinFunction(double freq_us, double phase_rad)
+SinFunction::SinFunction(double freq_MHz, double phase_rad)
     :
-      mOmega_us(2. * M_PI * freq_us),
+      mOmega_us(2. * M_PI * freq_MHz),
       mPhase_rad(phase_rad)
 {
 

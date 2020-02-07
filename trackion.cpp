@@ -85,7 +85,7 @@ void DefaultTrackIon::run()
         if(mObs) mObs->write(S0, t0); //write first step
         if(mStopCond && mStopCond->stop(mInitState, t0))
             return; //early return if stop condition was achieved before integration
-        while(h / mH_us >= std::numeric_limits<double>::epsilon())
+        while(h / mH_us >= 1e-10)
         {
             S1 = mIntegrator->doStep(S0, t0, h);
             if(!mIsRunning || (mStopCond && mStopCond->stop(S1, t0 + h)))
@@ -100,7 +100,6 @@ void DefaultTrackIon::run()
                 if(mObs) mObs->write(S0, t0);
             }
         }
-
     }
 }
 
@@ -129,7 +128,7 @@ void DefaultTrackIon::setIntegrator
     constexpr double gAmu_kg = 1.66053892173E-27;
     constexpr double gElemCharge_C = 1.60217663410E-19;
     constexpr double gMzFactor = gAmu_kg / gElemCharge_C;
-    double factor = 1e-3/(mz_amu * gMzFactor);
+    double factor = 1e-6/(mz_amu * gMzFactor);
     PhaseStateIntegrator::Eqns * eqns
             = new SimpleEqns(field, factor, this);
     mIntegrator.reset
@@ -192,5 +191,6 @@ void VectorObserver::write(const DefaultTrackIon::State &state, double time_us)
     {
         mStates.push_back(state);
         mTimes.push_back(time_us);
+        cnt = 0;
     }
 }

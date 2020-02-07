@@ -47,9 +47,9 @@ HEADERS += \
     pyrunions.h
 
 INCLUDEPATH += \
-    /usr/include/python3.6m
+    /usr/include/python3.4m
 
-LIBS += -lboost_python-py36
+LIBS += -lboost_python-py34
 
 unix {
     target.path = /usr/lib

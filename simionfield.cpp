@@ -103,7 +103,7 @@ double SimionField::electVoltage(const simion::PA &pa)
     ITERATE_OVER_PAR
     (
         pa,
-        if(pa.electrode(x, y, z) && pa.potential(x, y, z) != 0.0)
+        if(pa.electrode(x, y, z))
         {
             QMutexLocker lock(&mutex);
             result = qMax(pa.potential(x, y, z), result);
