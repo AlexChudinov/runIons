@@ -22,7 +22,6 @@ DynamicField::DynamicField(Field *field, TimeField::TimeFunction *fun)
       mField(field),
       mFun(fun)
 {
-
 }
 
 TimeField::MayBeVector3d DynamicField::field(const Vector3d &pos_gu, double t_us) const

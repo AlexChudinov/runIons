@@ -1,5 +1,4 @@
 #include "trackion.h"
-#include <QDebug>
 
 DefaultTrackIon::IntegratorSelector::MapStrFun
     DefaultTrackIon::IntegratorSelector::sIntegrators;

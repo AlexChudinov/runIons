@@ -1,6 +1,5 @@
 #include "pyrunions.h"
 #include <boost/python/iterator.hpp>
-#include <QDebug>
 
 PyRunIons::PyObserver::PyObserver(PyRunIons::PyList &list, int stepsPerSample)
     :
@@ -12,7 +11,7 @@ PyRunIons::PyObserver::PyObserver(PyRunIons::PyList &list, int stepsPerSample)
 void PyRunIons::PyObserver::write(const DefaultTrackIon::State &state, double time_us)
 {
     static int cnts;
-    if(cnts++ == mStepsPerSample)
+    if(cnts++ >= mStepsPerSample)
     {
         PyList list;
         list.append(state[0]);

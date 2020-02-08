@@ -1,6 +1,5 @@
 #include "phasestateintegrator.h"
 #include "timefield.h"
-#include <QDebug>
 
 PhaseStateIntegrator::PhaseStateIntegrator(PhaseStateIntegrator::Eqns *eqns)
     :
