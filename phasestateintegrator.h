@@ -1,8 +1,10 @@
 #ifndef PHASESTATEINTEGRATOR_H
 #define PHASESTATEINTEGRATOR_H
 
+#include <random>
 #include <memory>
 #include <array>
+#include <eigen3/Eigen/Dense>
 #include <boost/numeric/odeint/stepper/runge_kutta4.hpp>
 #include <boost/numeric/odeint/stepper/modified_midpoint.hpp>
 #include "maybe.h"
@@ -123,6 +125,57 @@ public:
     ModifiedMidpoint(Eqns * eqns);
 
     State doStep(const State &x0, double t_us, double h_us) const;
+};
+
+/**
+ * @brief The InitStateGenerator class interface to generate init phase state
+ * conditions
+ */
+class InitStateGenerator
+{
+public:
+    using State = PhaseStateIntegrator::State;
+
+    virtual ~InitStateGenerator()=default;
+
+    /**
+     * @brief generate init phase state of an ion
+     * @return return ion phase state
+     */
+    virtual State generate() = 0;
+};
+
+/**
+ * @brief The RoundSpotTemp class implements round spot particle source with
+ * initial temperature
+ */
+class RoundSpotTemp : public InitStateGenerator
+{
+    std::mt19937_64 mGen;
+    std::uniform_real_distribution<> mUniDist;
+    std::normal_distribution<> mNormDist;
+
+    const static double kB;
+    const static double amuKg;
+public:
+    using Vector3d = Eigen::Vector3d;
+    RoundSpotTemp
+    (
+        double mass_amu,
+        double Temp_K,
+        double r0_mm,
+        const Vector3d& pos_mm,
+        const Vector3d& norm
+    );
+
+    State generate();
+
+private:
+    Vector3d makeOrthogonal(const Vector3d& v);
+
+    const Vector3d mPos_mm;
+    const Vector3d mEn;
+    const Vector3d mEt;
 };
 
 #endif // PHASESTATEINTEGRATOR_H

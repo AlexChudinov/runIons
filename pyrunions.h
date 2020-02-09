@@ -21,6 +21,10 @@ public:
         PyObserver(PyList & list, int stepsPerSample);
 
         void write(const DefaultTrackIon::State &state, double time_us);
+
+        void startWrite(const DefaultTrackIon::State &state, double time_us);
+
+        void finalWrite(const DefaultTrackIon::State &state, double time_us);
     };
 
     class PyStopCondition : public DefaultTrackIon::TrackStop

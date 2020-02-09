@@ -81,7 +81,7 @@ void DefaultTrackIon::run()
         State S1 = mInitState, S0 = S1;
         double h = mH_us;
         double t0 = mTime_us;
-        if(mObs) mObs->write(S0, t0); //write first step
+        if(mObs) mObs->startWrite(S0, t0); //write first step
         if(mStopCond && mStopCond->stop(mInitState, t0))
             return; //early return if stop condition was achieved before integration
         while(h / mH_us >= 1e-10)
@@ -99,6 +99,7 @@ void DefaultTrackIon::run()
                 if(mObs) mObs->write(S0, t0);
             }
         }
+        mObs->finalWrite(S0, t0);
     }
 }
 
@@ -162,11 +163,21 @@ void FileObserver::write(const DefaultTrackIon::State &state, double time_us)
     static int cnt;
     if(cnt++ >= mStepsPerSample)
     {
-        mFile << time_us << "\t" << state[0] << "\t" << state[1]
-              << "\t" << state[2] << "\t" << state[3] << "\t"
-              << state[4] << "\t" << state[5] << "\n";
+        startWrite(state, time_us);
         cnt = 0;
     }
+}
+
+void FileObserver::startWrite(const DefaultTrackIon::State &state, double time_us)
+{
+    mFile << time_us << "\t" << state[0] << "\t" << state[1]
+          << "\t" << state[2] << "\t" << state[3] << "\t"
+          << state[4] << "\t" << state[5] << "\n";
+}
+
+void FileObserver::finalWrite(const DefaultTrackIon::State &state, double time_us)
+{
+    startWrite(state, time_us);
 }
 
 VectorObserver::VectorObserver
@@ -188,8 +199,18 @@ void VectorObserver::write(const DefaultTrackIon::State &state, double time_us)
     static int cnt;
     if(cnt++ >= mStepsPerSample)
     {
-        mStates.push_back(state);
-        mTimes.push_back(time_us);
+        startWrite(state, time_us);
         cnt = 0;
     }
+}
+
+void VectorObserver::startWrite(const DefaultTrackIon::State &state, double time_us)
+{
+    mStates.push_back(state);
+    mTimes.push_back(time_us);
+}
+
+void VectorObserver::finalWrite(const DefaultTrackIon::State &state, double time_us)
+{
+    startWrite(state, time_us);
 }

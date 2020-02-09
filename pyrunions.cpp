@@ -26,6 +26,24 @@ void PyRunIons::PyObserver::write(const DefaultTrackIon::State &state, double ti
     }
 }
 
+void PyRunIons::PyObserver::startWrite(const DefaultTrackIon::State &state, double time_us)
+{
+    PyList list;
+    list.append(state[0]);
+    list.append(state[1]);
+    list.append(state[2]);
+    list.append(state[3]);
+    list.append(state[4]);
+    list.append(state[5]);
+    list.append(time_us);
+    mList.append(list);
+}
+
+void PyRunIons::PyObserver::finalWrite(const DefaultTrackIon::State &state, double time_us)
+{
+    startWrite(state, time_us);
+}
+
 
 PyRunIons::PyStopCondition::PyStopCondition(double maxTime_us)
     :

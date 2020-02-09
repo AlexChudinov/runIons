@@ -77,6 +77,8 @@ public:
     {
     public:
         virtual void write(const State& state, double time_us) = 0;
+        virtual void startWrite(const State& state, double time_us) = 0;
+        virtual void finalWrite(const State& state, double time_us) = 0;
     };
 
     /**
@@ -150,6 +152,10 @@ public:
     FileObserver(const std::string& fileName, int stepsPerSample = 1);
 
     void write(const DefaultTrackIon::State &state, double time_us);
+
+    void startWrite(const DefaultTrackIon::State &state, double time_us);
+
+    void finalWrite(const DefaultTrackIon::State &state, double time_us);
 private:
     /**
      * @brief mFile file to save data
@@ -177,6 +183,10 @@ public:
     );
 
     void write(const DefaultTrackIon::State &state, double time_us);
+
+    void startWrite(const DefaultTrackIon::State &state, double time_us);
+
+    void finalWrite(const DefaultTrackIon::State &state, double time_us);
 private:
     std::vector<DefaultTrackIon::State>& mStates;
     std::vector<double>& mTimes;
