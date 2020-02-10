@@ -4,7 +4,7 @@
 #include "pythonfields.h"
 #include "trackion.h"
 
-class PyRunIons
+class PyRunIon
 {
     PySimFields mField;
 
@@ -36,7 +36,7 @@ public:
         bool stop(const DefaultTrackIon::State &, double time_us) const;
     };
 
-    PyRunIons(PySimFields field);
+    PyRunIon(PySimFields field);
 
     /**
      * @brief integrators obtains list of available integrators
@@ -53,6 +53,24 @@ public:
     void setTimeStep_us(double h_us);
 
     void run(PyList& result, double stopTime, int stepsPerSample);
+};
+
+class PyRunIons
+{
+    std::unique_ptr<TrackIonBunch> mTracker;
+public:
+    PyRunIons(PySimFields field,
+              const std::string& integratorName,
+              int nIons,
+              double x0_mm = 0.0,
+              double y0_mm = 0.0,
+              double z0_mm = 0.0,
+              double xnorm = 0.0,
+              double ynorm = 0.0,
+              double znorm = 1.0,
+              double tobMax_us = 1.0);
+
+private:
 };
 
 #endif // PYRUNIONS_H

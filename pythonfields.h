@@ -28,6 +28,7 @@ public:
  */
 class PySimFields
 {
+    friend class PyRunIon;
     friend class PyRunIons;
 public:
     using PyList = boost::python::list;
