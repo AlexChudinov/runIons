@@ -193,4 +193,15 @@ private:
     int mStepsPerSample;
 };
 
+class TrackIonBunch : public QRunnable
+{
+public:
+    virtual ~TrackIonBunch() = default;
+
+    void run();
+private:
+    std::vector<std::shared_ptr<DefaultTrackIon>> mTrackers;
+    std::unique_ptr<InitStateGenerator> mSource;
+}
+
 #endif // TRACKION_H
