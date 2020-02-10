@@ -1,7 +1,5 @@
 #include "phasestateintegrator.h"
 #include "timefield.h"
-#include <cassert>
-#include <ctime>
 
 PhaseStateIntegrator::PhaseStateIntegrator(PhaseStateIntegrator::Eqns *eqns)
     :
@@ -88,59 +86,3 @@ SIMPLE_INTEGRATOR(RK4Integrator)
 
 SIMPLE_INTEGRATOR(ModifiedMidpoint)
 
-
-const double RoundSpotTemp::kB = 1.380649e-23;
-const double RoundSpotTemp::amuKg = 1.66053892173E-27;
-RoundSpotTemp::RoundSpotTemp
-(
-    double mass_amu,
-    double Temp_K,
-    double r0_mm,
-    const RoundSpotTemp::Vector3d &pos_mm,
-    const RoundSpotTemp::Vector3d &norm
-)
-    :
-      mGen(std::time(nullptr)),
-      mUniDist(0, r0_mm),
-      mNormDist(0.0, std::sqrt(kB * Temp_K / mass_amu / amuKg)/1000),
-      mPos_mm(pos_mm),
-      mEn(r0_mm * makeOrthogonal(norm)),
-      mEt(r0_mm * mEn.cross(norm).normalized())
-{
-}
-
-InitStateGenerator::State RoundSpotTemp::generate()
-{
-    const double phi = 2. * M_PI * mUniDist(mGen);
-    const double r = std::sqrt(mUniDist(mGen));
-    const Vector3d pos = (mEn * std::cos(phi) + mEt * std::sin(phi)) * r;
-    return {pos.x(), pos.y(), pos.z(), mNormDist(mGen), mNormDist(mGen), mNormDist(mGen)};
-}
-
-RoundSpotTemp::Vector3d RoundSpotTemp::makeOrthogonal(const RoundSpotTemp::Vector3d &v)
-{
-    Vector3d rn;
-    if(v.x() != 0)
-    {
-        rn.x() = -(v.y() + v.z())/v.x();
-        rn.y() = 1;
-        rn.z() = 1;
-    }
-    else if(v.y() != 0)
-    {
-        rn.x() = 1;
-        rn.y() = -(v.x() + v.z())/v.y();
-        rn.z() = 1;
-    }
-    else if(v.z() != 0)
-    {
-        rn.x() = 1;
-        rn.y() = 1;
-        rn.z() = -(v.x() + v.y())/v.z();
-    }
-    else
-    {
-        throw std::string("RoundSpotTemp::makeOrthogonal : zero division error");
-    }
-    return rn.normalized();
-}

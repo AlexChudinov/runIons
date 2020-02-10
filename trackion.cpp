@@ -1,4 +1,6 @@
 #include "trackion.h"
+#include <QtConcurrent>
+#include <ctime>
 
 DefaultTrackIon::IntegratorSelector::MapStrFun
     DefaultTrackIon::IntegratorSelector::sIntegrators;
@@ -125,9 +127,7 @@ void DefaultTrackIon::setIntegrator
     const std::shared_ptr<CompoundField> &field
 )
 {
-    constexpr double gAmu_kg = 1.66053892173E-27;
-    constexpr double gElemCharge_C = 1.60217663410E-19;
-    constexpr double gMzFactor = gAmu_kg / gElemCharge_C;
+    constexpr double gMzFactor = amu_kg / e_C;
     double factor = 1e-6/(mz_amu * gMzFactor);
     PhaseStateIntegrator::Eqns * eqns
             = new SimpleEqns(field, factor, this);
@@ -213,4 +213,106 @@ void VectorObserver::startWrite(const DefaultTrackIon::State &state, double time
 void VectorObserver::finalWrite(const DefaultTrackIon::State &state, double time_us)
 {
     startWrite(state, time_us);
+}
+
+
+TrackIonBunch::TrackIonBunch
+(
+    TrackIonBunch::InitStateGenerator *source,
+    TrackIonBunch::InitTimeGenerator *time
+)
+    :
+      mSource(source),
+      mTime(time)
+{
+}
+
+void TrackIonBunch::run()
+{
+    for(auto t : mTrackers)
+    {
+        t->setInitState(mSource->generate());
+        t->setTime(mTime->generate());
+    }
+    QtConcurrent::map(mTrackers, [this](std::shared_ptr<DefaultTrackIon> t)
+    {
+        t->run();
+    }).waitForFinished();
+}
+
+void TrackIonBunch::addTracker(DefaultTrackIon * tracker)
+{
+    mTrackers.push_back(std::shared_ptr<DefaultTrackIon>(tracker));
+}
+
+RoundSpotTemp::RoundSpotTemp
+(
+    double mass_amu,
+    double Temp_K,
+    double r0_mm,
+    const RoundSpotTemp::Vector3d &pos_mm,
+    const RoundSpotTemp::Vector3d &norm
+)
+    :
+      mGen(std::time(nullptr)),
+      mUniDist(0, r0_mm),
+      mNormDist
+      (
+        0.0,
+        std::sqrt(DefaultTrackIon::kB_J * Temp_K / mass_amu / DefaultTrackIon::amu_kg)/1000
+      ),
+      mPos_mm(pos_mm),
+      mEn(r0_mm * makeOrthogonal(norm)),
+      mEt(r0_mm * mEn.cross(norm).normalized())
+{
+}
+
+TrackIonBunch::InitStateGenerator::State RoundSpotTemp::generate()
+{
+    const double phi = 2. * M_PI * mUniDist(mGen);
+    const double r = std::sqrt(mUniDist(mGen));
+    const Vector3d pos = (mEn * std::cos(phi) + mEt * std::sin(phi)) * r;
+    return {pos.x(), pos.y(), pos.z(), mNormDist(mGen), mNormDist(mGen), mNormDist(mGen)};
+}
+
+RoundSpotTemp::Vector3d RoundSpotTemp::makeOrthogonal(const RoundSpotTemp::Vector3d &v)
+{
+    Vector3d rn;
+    if(v.x() != 0)
+    {
+        rn.x() = -(v.y() + v.z())/v.x();
+        rn.y() = 1;
+        rn.z() = 1;
+    }
+    else if(v.y() != 0)
+    {
+        rn.x() = 1;
+        rn.y() = -(v.x() + v.z())/v.y();
+        rn.z() = 1;
+    }
+    else if(v.z() != 0)
+    {
+        rn.x() = 1;
+        rn.y() = 1;
+        rn.z() = -(v.x() + v.y())/v.z();
+    }
+    else
+    {
+        throw std::string("RoundSpotTemp::makeOrthogonal : zero division error");
+    }
+    return rn.normalized();
+}
+
+
+UniformStartTime::UniformStartTime(double maxTime_us)
+    :
+      mGen(std::time(nullptr)),
+      mUniDist(0, maxTime_us)
+{
+
+}
+
+double UniformStartTime::generate()
+{
+    return mUniDist(mGen);
 }

@@ -20,6 +20,14 @@ public:
     using State = PhaseStateIntegrator::State;
 
     /**
+     * Ion Constants
+     */
+    static constexpr double amu_kg = 1.66053892173E-27;
+    static constexpr double kB_J = 1.380649e-23;
+    static constexpr double e_C = 1.60217663410E-19;
+
+
+    /**
      * @brief The InegratorSelector class selects integrator using string
      * lict
      */
@@ -196,12 +204,87 @@ private:
 class TrackIonBunch : public QRunnable
 {
 public:
+    /**
+     * @brief The InitStateGenerator class interface to generate init phase state
+     * conditions
+     */
+    class InitStateGenerator
+    {
+    public:
+        using State = PhaseStateIntegrator::State;
+
+        virtual ~InitStateGenerator()=default;
+
+        /**
+         * @brief generate init phase state of an ion
+         * @return return ion phase state
+         */
+        virtual State generate() = 0;
+    };
+
+    /**
+     * @brief The InitTimeGenerator class interface to generate init start time
+     */
+    class InitTimeGenerator
+    {
+    public:
+        virtual ~InitTimeGenerator()=default;
+
+        virtual double generate() = 0;
+    };
+
+    TrackIonBunch(InitStateGenerator * source, InitTimeGenerator * time);
+
     virtual ~TrackIonBunch() = default;
 
     void run();
+
+    void addTracker(DefaultTrackIon *tracker);
 private:
     std::vector<std::shared_ptr<DefaultTrackIon>> mTrackers;
     std::unique_ptr<InitStateGenerator> mSource;
-}
+    std::unique_ptr<InitTimeGenerator> mTime;
+};
+
+/**
+ * @brief The RoundSpotTemp class implements round spot particle source with
+ * initial temperature
+ */
+class RoundSpotTemp : public TrackIonBunch::InitStateGenerator
+{
+    std::mt19937_64 mGen;
+    std::uniform_real_distribution<> mUniDist;
+    std::normal_distribution<> mNormDist;
+
+public:
+    using Vector3d = Eigen::Vector3d;
+    RoundSpotTemp
+    (
+        double mass_amu,
+        double Temp_K,
+        double r0_mm,
+        const Vector3d& pos_mm,
+        const Vector3d& norm
+    );
+
+    State generate();
+
+private:
+    Vector3d makeOrthogonal(const Vector3d& v);
+
+    const Vector3d mPos_mm;
+    const Vector3d mEn;
+    const Vector3d mEt;
+};
+
+class UniformStartTime : public TrackIonBunch::InitTimeGenerator
+{
+    std::mt19937_64 mGen;
+    std::uniform_real_distribution<> mUniDist;
+public:
+    UniformStartTime(double maxTime_us);
+
+    double generate();
+};
 
 #endif // TRACKION_H
