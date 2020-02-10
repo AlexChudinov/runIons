@@ -10,7 +10,7 @@
 class Field
 {
 public:
-    using Vector3d = Eigen::Vector3d;
+    using Vector3d =  Eigen::Vector3d;
     using MayBeDouble = MayBe<double>;
     using MayBeVector3d = MayBe<Vector3d>;
 
