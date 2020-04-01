@@ -86,7 +86,7 @@ void DefaultTrackIon::run()
         if(mObs) mObs->startWrite(S0, t0); //write first step
         if(mStopCond && mStopCond->stop(mInitState, t0))
             return; //early return if stop condition was achieved before integration
-        while(h / mH_us >= 1e-10)
+        while(h / mH_us >= std::numeric_limits<double>::epsilon())
         {
             S1 = mIntegrator->doStep(S0, t0, h);
             if(!mIsRunning || (mStopCond && mStopCond->stop(S1, t0 + h)))

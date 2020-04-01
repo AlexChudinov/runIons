@@ -2,7 +2,7 @@
 #include <QVector>
 #include <QtConcurrent>
 
-//global vector to lazy parallel indexing
+//global vector for lazy parallel indexing
 QVector<int> xs;
 //iterate over potential array in parallel
 #define ITERATE_OVER_PAR(pa, OPERATION) \
